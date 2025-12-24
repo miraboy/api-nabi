@@ -144,7 +144,7 @@ const options = {
         },
         CreateTontineRequest: {
           type: "object",
-          required: ["name", "amount", "max_members", "frequency"],
+          required: ["name", "amount", "min_members", "frequency"],
           properties: {
             name: {
               type: "string",
@@ -154,13 +154,15 @@ const options = {
               type: "number",
               example: 10000,
             },
-            max_members: {
+            min_members: {
               type: "integer",
-              example: 10,
+              minimum: 2,
+              example: 5,
             },
             frequency: {
               type: "string",
-              example: "mensuelle",
+              enum: ["daily", "weekly", "monthly", "yearly"],
+              example: "monthly",
             },
           },
         },
@@ -171,6 +173,29 @@ const options = {
             amount: {
               type: "number",
               example: 10000,
+            },
+          },
+        },
+        UpdateTontineRequest: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+              example: "Tontine familiale mise à jour",
+            },
+            amount: {
+              type: "number",
+              example: 15000,
+            },
+            min_members: {
+              type: "integer",
+              minimum: 2,
+              example: 8,
+            },
+            frequency: {
+              type: "string",
+              enum: ["daily", "weekly", "monthly", "yearly"],
+              example: "weekly",
             },
           },
         },
@@ -189,13 +214,15 @@ const options = {
               type: "number",
               example: 10000,
             },
-            max_members: {
+            min_members: {
               type: "integer",
-              example: 10,
+              minimum: 2,
+              example: 5,
             },
             frequency: {
               type: "string",
-              example: "mensuelle",
+              enum: ["daily", "weekly", "monthly", "yearly"],
+              example: "monthly",
             },
             status: {
               type: "string",

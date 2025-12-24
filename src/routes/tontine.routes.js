@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authenticateToken = require("../middlewares/auth.middleware");
+const isAuthor = require("../middlewares/author.middleware");
 const {
   createTontine,
   getAllTontines,
@@ -8,11 +9,14 @@ const {
   joinTontine,
   makePayment,
   getUserTontines,
+  updateTontine,
+  deleteTontine,
 } = require("../controllers/tontine.controller");
 const {
   createTontineValidation,
   tontineIdValidation,
   makePaymentValidation,
+  updateTontineValidation,
 } = require("../validators/auth.validators");
 const {
   handleValidationErrors,
@@ -254,6 +258,107 @@ router.post(
   makePaymentValidation,
   handleValidationErrors,
   makePayment
+);
+
+/**
+ * @swagger
+ * /api/tontines/{id}:
+ *   put:
+ *     summary: Update a tontine (owner only)
+ *     tags: [Tontines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tontine ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               min_members:
+ *                 type: integer
+ *               frequency:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Tontine updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       403:
+ *         description: Not the owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Tontine not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.put(
+  "/:id",
+  updateTontineValidation,
+  handleValidationErrors,
+  isAuthor,
+  updateTontine
+);
+
+/**
+ * @swagger
+ * /api/tontines/{id}:
+ *   delete:
+ *     summary: Delete a tontine (owner only)
+ *     tags: [Tontines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tontine ID
+ *     responses:
+ *       200:
+ *         description: Tontine deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       403:
+ *         description: Not the owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Tontine not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.delete(
+  "/:id",
+  tontineIdValidation,
+  handleValidationErrors,
+  isAuthor,
+  deleteTontine
 );
 
 module.exports = router;

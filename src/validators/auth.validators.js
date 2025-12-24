@@ -55,19 +55,17 @@ const createTontineValidation = [
     .withMessage("Amount must be a number")
     .custom((value) => value > 0)
     .withMessage("Amount must be greater than 0"),
-  body("max_members")
+  body("min_members")
     .notEmpty()
-    .withMessage("Max members is required")
+    .withMessage("Min members is required")
     .isInt({ min: 2 })
-    .withMessage("Max members must be at least 2"),
+    .withMessage("Min members must be at least 2"),
   body("frequency")
     .trim()
     .notEmpty()
     .withMessage("Frequency is required")
-    .isIn(["journalière", "hebdomadaire", "mensuelle", "annuelle"])
-    .withMessage(
-      "Frequency must be one of: journalière, hebdomadaire, mensuelle, annuelle"
-    ),
+    .isIn(["daily", "weekly", "monthly", "yearly"])
+    .withMessage("Frequency must be one of: daily, weekly, monthly, yearly"),
 ];
 
 /**
@@ -95,10 +93,38 @@ const makePaymentValidation = [
     .withMessage("Amount must be greater than 0"),
 ];
 
+/**
+ * Validation rules for updating a tontine
+ */
+const updateTontineValidation = [
+  ...tontineIdValidation,
+  body("name")
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 100 })
+    .withMessage("Name must be between 3 and 100 characters"),
+  body("amount")
+    .optional()
+    .isNumeric()
+    .withMessage("Amount must be a number")
+    .custom((value) => value > 0)
+    .withMessage("Amount must be greater than 0"),
+  body("min_members")
+    .optional()
+    .isInt({ min: 2 })
+    .withMessage("Min members must be at least 2"),
+  body("frequency")
+    .optional()
+    .trim()
+    .isIn(["daily", "weekly", "monthly", "yearly"])
+    .withMessage("Frequency must be one of: daily, weekly, monthly, yearly"),
+];
+
 module.exports = {
   registerValidation,
   loginValidation,
   createTontineValidation,
   tontineIdValidation,
   makePaymentValidation,
+  updateTontineValidation,
 };

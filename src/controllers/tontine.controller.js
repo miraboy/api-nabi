@@ -8,14 +8,14 @@ const { sendSuccess, sendError } = require("../utils/helpers");
  */
 const createTontine = async (req, res) => {
   try {
-    const { name, amount, max_members, frequency } = req.body;
+    const { name, amount, min_members, frequency } = req.body;
     const ownerId = req.user.id;
 
     // Create tontine
     const tontine = await Tontine.create(
       name,
       amount,
-      max_members,
+      min_members,
       frequency,
       ownerId
     );
@@ -29,7 +29,7 @@ const createTontine = async (req, res) => {
         id: tontine.id,
         name: tontine.name,
         amount: tontine.amount,
-        max_members: tontine.max_members,
+        min_members: tontine.min_members,
         frequency: tontine.frequency,
         owner_id: tontine.owner_id,
         status: "open",
@@ -115,20 +115,21 @@ const joinTontine = async (req, res) => {
       return sendError(res, "Already a member of this tontine", 409);
     }
 
-    // Check if tontine is full
-    const membersCount = await TontineMember.countMembers(id);
-    if (membersCount >= tontine.max_members) {
-      return sendError(res, "Tontine is full", 400);
-    }
-
     // Add member
     await TontineMember.create(id, userId);
+
+    // Check if min_members reached and auto-close
+    const membersCount = await TontineMember.countMembers(id);
+    if (membersCount >= tontine.min_members) {
+      await Tontine.updateStatus(id, "closed");
+    }
 
     sendSuccess(
       res,
       {
         tontine_id: id,
         user_id: userId,
+        status: membersCount >= tontine.min_members ? "closed" : "open",
       },
       "Successfully joined tontine",
       201
@@ -158,6 +159,16 @@ const makePayment = async (req, res) => {
     const isMember = await TontineMember.isMember(id, userId);
     if (!isMember) {
       return sendError(res, "You must be a member to make a payment", 403);
+    }
+
+    // Check if min_members reached
+    const membersCount = await TontineMember.countMembers(id);
+    if (membersCount < tontine.min_members) {
+      return sendError(
+        res,
+        `Payment not allowed. Minimum ${tontine.min_members} members required, currently ${membersCount}`,
+        400
+      );
     }
 
     // Verify amount matches tontine amount
@@ -220,6 +231,47 @@ const getUserTontines = async (req, res) => {
   }
 };
 
+/**
+ * Update a tontine (owner only)
+ */
+const updateTontine = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, amount, min_members, frequency } = req.body;
+    const tontine = req.tontine; // From isAuthor middleware
+
+    const updatedData = {
+      name: name || tontine.name,
+      amount: amount || tontine.amount,
+      min_members: min_members || tontine.min_members,
+      frequency: frequency || tontine.frequency,
+    };
+
+    await Tontine.update(id, updatedData);
+
+    sendSuccess(res, { id, ...updatedData }, "Tontine updated successfully");
+  } catch (error) {
+    console.error("Update tontine error:", error);
+    sendError(res, "Failed to update tontine", 500);
+  }
+};
+
+/**
+ * Delete a tontine (owner only)
+ */
+const deleteTontine = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Tontine.delete(id);
+
+    sendSuccess(res, null, "Tontine deleted successfully");
+  } catch (error) {
+    console.error("Delete tontine error:", error);
+    sendError(res, "Failed to delete tontine", 500);
+  }
+};
+
 module.exports = {
   createTontine,
   getAllTontines,
@@ -227,4 +279,6 @@ module.exports = {
   joinTontine,
   makePayment,
   getUserTontines,
+  updateTontine,
+  deleteTontine,
 };

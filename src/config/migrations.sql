@@ -15,10 +15,10 @@ CREATE TABLE IF NOT EXISTS tontines (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(150) NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
-  max_members INTEGER NOT NULL,
-  frequency VARCHAR(50) NOT NULL,
+  min_members INTEGER NOT NULL CHECK(min_members >= 2),
+  frequency VARCHAR(50) NOT NULL CHECK(frequency IN ('daily', 'weekly', 'monthly', 'yearly')),
   owner_id INTEGER NOT NULL,
-  status VARCHAR(30) DEFAULT 'open',
+  status VARCHAR(30) DEFAULT 'open' CHECK(status IN ('open', 'closed')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (owner_id) REFERENCES users(id)
 );
