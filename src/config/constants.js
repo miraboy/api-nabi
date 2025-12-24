@@ -1,6 +1,6 @@
 module.exports = {
   // API Configuration
-  API_VERSION: "/api/v1",
+  API_VERSION: "/api",
 
   // Pagination
   DEFAULT_PAGE_SIZE: 10,

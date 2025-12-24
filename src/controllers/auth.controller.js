@@ -101,7 +101,21 @@ const login = async (req, res) => {
   }
 };
 
+/**
+ * Logout user
+ */
+const logout = async (req, res) => {
+  try {
+    // Client should remove the token from storage
+    sendSuccess(res, null, "Logout successful");
+  } catch (error) {
+    console.error("Logout error:", error);
+    sendError(res, "Logout failed", 500);
+  }
+};
+
 module.exports = {
   register,
   login,
+  logout,
 };
