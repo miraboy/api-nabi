@@ -13,15 +13,6 @@ const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
-      return sendError(res, "Name, email and password are required", 400);
-    }
-
-    if (password.length < 6) {
-      return sendError(res, "Password must be at least 6 characters", 400);
-    }
-
     // Check if user exists
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
@@ -62,11 +53,6 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Validation
-    if (!email || !password) {
-      return sendError(res, "Email and password are required", 400);
-    }
 
     // Find user
     const user = await User.findByEmail(email);

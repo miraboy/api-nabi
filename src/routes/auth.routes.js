@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const { register, login, logout } = require("../controllers/auth.controller");
+const {
+  registerValidation,
+  loginValidation,
+} = require("../validators/auth.validators");
+const {
+  handleValidationErrors,
+} = require("../middlewares/validator.middleware");
 
 /**
  * @swagger
@@ -34,7 +41,7 @@ const { register, login, logout } = require("../controllers/auth.controller");
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/register", register);
+router.post("/register", registerValidation, handleValidationErrors, register);
 
 /**
  * @swagger
@@ -62,7 +69,7 @@ router.post("/register", register);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/login", login);
+router.post("/login", loginValidation, handleValidationErrors, login);
 
 /**
  * @swagger

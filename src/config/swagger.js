@@ -142,6 +142,104 @@ const options = {
             },
           },
         },
+        CreateTontineRequest: {
+          type: "object",
+          required: ["name", "amount", "max_members", "frequency"],
+          properties: {
+            name: {
+              type: "string",
+              example: "Tontine familiale",
+            },
+            amount: {
+              type: "number",
+              example: 10000,
+            },
+            max_members: {
+              type: "integer",
+              example: 10,
+            },
+            frequency: {
+              type: "string",
+              example: "mensuelle",
+            },
+          },
+        },
+        PaymentRequest: {
+          type: "object",
+          required: ["amount"],
+          properties: {
+            amount: {
+              type: "number",
+              example: 10000,
+            },
+          },
+        },
+        Tontine: {
+          type: "object",
+          properties: {
+            id: {
+              type: "integer",
+              example: 1,
+            },
+            name: {
+              type: "string",
+              example: "Tontine familiale",
+            },
+            amount: {
+              type: "number",
+              example: 10000,
+            },
+            max_members: {
+              type: "integer",
+              example: 10,
+            },
+            frequency: {
+              type: "string",
+              example: "mensuelle",
+            },
+            status: {
+              type: "string",
+              enum: ["open", "closed"],
+              example: "open",
+            },
+            owner_id: {
+              type: "integer",
+              example: 1,
+            },
+            created_at: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        UserTontinesResponse: {
+          type: "object",
+          properties: {
+            success: {
+              type: "boolean",
+              example: true,
+            },
+            data: {
+              type: "object",
+              properties: {
+                owned: {
+                  type: "array",
+                  description: "Tontines where user is the owner",
+                  items: {
+                    $ref: "#/components/schemas/Tontine",
+                  },
+                },
+                member: {
+                  type: "array",
+                  description: "Tontines where user is a member",
+                  items: {
+                    $ref: "#/components/schemas/Tontine",
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
     tags: [
@@ -156,6 +254,10 @@ const options = {
       {
         name: "Users",
         description: "User management endpoints (protected)",
+      },
+      {
+        name: "Tontines",
+        description: "Tontine management endpoints (protected)",
       },
     ],
   },
