@@ -2,7 +2,7 @@ const express = require("express");
 const requestLogger = require("./middlewares/logger.middleware");
 const { errorHandler, notFound } = require("./middlewares/error.middleware");
 const routes = require("./routes");
-
+require("./utils/db");
 const app = express();
 
 // Middlewares
