@@ -9,6 +9,8 @@ const {
   handleValidationErrors,
 } = require("../middlewares/validator.middleware");
 
+// Auth routes are public (no authentication required)
+
 /**
  * @swagger
  * /api/auth/register:

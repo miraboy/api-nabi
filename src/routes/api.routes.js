@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const apiController = require("../controllers/api.controller");
 
+// API health routes are public (no authentication required)
+
 /**
  * @swagger
  * /api/health:
@@ -35,6 +37,7 @@ const apiController = require("../controllers/api.controller");
  *                       type: number
  *                       example: 123.45
  */
+// Health check - NO authentication required
 router.get("/health", apiController.getHealthStatus);
 
 /**
@@ -51,6 +54,7 @@ router.get("/health", apiController.getHealthStatus);
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
+// Welcome - NO authentication required  
 router.get("/", apiController.getWelcome);
 
 module.exports = router;

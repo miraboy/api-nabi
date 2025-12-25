@@ -17,7 +17,7 @@ const {
   handleValidationErrors,
 } = require("../middlewares/validator.middleware");
 
-// All routes are protected
+// All cycle routes require authentication
 router.use(authenticateToken);
 
 /**

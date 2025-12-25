@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateToken = require("../middlewares/auth.middleware");
 const { getProfile, updateProfile } = require("../controllers/user.controller");
 
-// All routes are protected with authenticateToken middleware
+// All user routes require authentication
 router.use(authenticateToken);
 
 /**

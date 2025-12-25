@@ -1,0 +1,543 @@
+{
+  "info": {
+    "name": "API Nabi - Gestion de Tontines",
+    "description": "Collection complète pour tester l'API REST de gestion de tontines avec authentification JWT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "ownerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "member1Token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "member2Token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tontineId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cycleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roundId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Vérifier que le serveur fonctionne"
+      }
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Owner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('ownerToken', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Owner\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Member 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('member1Token', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bob Member\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Member 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('member2Token', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Charlie Member\",\n  \"email\": \"charlie@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tontines",
+      "item": [
+        {
+          "name": "Create Tontine",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('tontineId', response.data.tontine.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tontine Mensuelle\",\n  \"amount\": 10000,\n  \"min_members\": 3,\n  \"frequency\": \"monthly\",\n  \"pickup_policy\": \"arrival\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tontines",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines"]
+            }
+          }
+        },
+        {
+          "name": "Get All Tontines",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines"]
+            }
+          }
+        },
+        {
+          "name": "Get Tontine By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}"]
+            }
+          }
+        },
+        {
+          "name": "Join Tontine (Member 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{member1Token}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "join"]
+            }
+          }
+        },
+        {
+          "name": "Join Tontine (Member 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{member2Token}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "join"]
+            }
+          }
+        },
+        {
+          "name": "Leave Tontine (Member 1) - Before Cycles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{member1Token}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/leave",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "leave"]
+            },
+            "description": "Should fail - cannot leave before cycles are completed"
+          }
+        },
+        {
+          "name": "Leave Tontine (Owner) - Should Fail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/leave",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "leave"]
+            },
+            "description": "Should fail - owner cannot leave their own tontine"
+          }
+        },
+        {
+          "name": "Leave Tontine (Member 1) - After All Cycles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{member1Token}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/leave",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "leave"]
+            },
+            "description": "Should succeed - member can leave after all cycles and rounds are completed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cycles",
+      "item": [
+        {
+          "name": "Create Cycle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('cycleId', response.data.cycle.id);",
+                  "    if (response.data.cycle.rounds && response.data.cycle.rounds.length > 0) {",
+                  "        pm.collectionVariables.set('roundId', response.data.cycle.rounds[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"start_date\": \"2025-01-01\",\n  \"end_date\": \"2025-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/cycles",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "cycles"]
+            }
+          }
+        },
+        {
+          "name": "Get Tontine Cycles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines/{{tontineId}}/cycles",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines", "{{tontineId}}", "cycles"]
+            }
+          }
+        },
+        {
+          "name": "Get Cycle By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cycles/{{cycleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cycles", "{{cycleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Payout Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"custom_order\": [3, 1, 2]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cycles/{{cycleId}}/payout-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["cycles", "{{cycleId}}", "payout-order"]
+            }
+          }
+        },
+        {
+          "name": "Start Cycle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cycles/{{cycleId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["cycles", "{{cycleId}}", "start"]
+            }
+          }
+        },
+        {
+          "name": "Get Cycle Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cycles/{{cycleId}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["cycles", "{{cycleId}}", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rounds",
+      "item": [
+        {
+          "name": "Get Round By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}"]
+            }
+          }
+        },
+        {
+          "name": "Close Round",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}", "close"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment (Owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Create Payment (Member 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{member1Token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Create Payment (Member 2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{member2Token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Round Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rounds/{{roundId}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["rounds", "{{roundId}}", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get My Payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "payments"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

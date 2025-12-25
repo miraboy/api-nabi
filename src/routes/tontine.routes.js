@@ -12,6 +12,7 @@ const {
   updateTontine,
   deleteTontine,
   getTontineMembers,
+  leaveTontine,
 } = require("../controllers/tontine.controller");
 const {
   createTontineValidation,
@@ -23,7 +24,7 @@ const {
   handleValidationErrors,
 } = require("../middlewares/validator.middleware");
 
-// All routes are protected
+// All tontine routes require authentication
 router.use(authenticateToken);
 
 /**
@@ -429,12 +430,52 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get(
-  "/:id/members",
+/**
+ * @swagger
+ * /api/tontines/{id}/leave:
+ *   post:
+ *     summary: Leave a tontine (member only, after all rounds completed)
+ *     tags: [Tontines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tontine ID
+ *     responses:
+ *       200:
+ *         description: Successfully left tontine
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Cannot leave tontine (active cycles or incomplete rounds)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Not a member or owner trying to leave
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Tontine not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post(
+  "/:id/leave",
   tontineIdValidation,
   handleValidationErrors,
-  isAuthor,
-  getTontineMembers
+  leaveTontine
 );
 
 module.exports = router;

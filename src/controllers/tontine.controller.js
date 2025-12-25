@@ -1,6 +1,8 @@
 const Tontine = require("../models/Tontine.model");
 const TontineMember = require("../models/TontineMember.model");
 const Payment = require("../models/Payment.model");
+const TontineCycle = require("../models/TontineCycle.model");
+const TontineRound = require("../models/TontineRound.model");
 const { sendSuccess, sendError } = require("../utils/helpers");
 
 /**
@@ -300,6 +302,77 @@ const getTontineMembers = async (req, res) => {
   }
 };
 
+/**
+ * Leave a tontine (member only, after all rounds completed)
+ */
+const leaveTontine = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Check if tontine exists
+    const tontine = await Tontine.findById(id);
+    if (!tontine) {
+      return sendError(res, "Tontine not found", 404);
+    }
+
+    // Check if user is a member
+    const isMember = await TontineMember.isMember(id, userId);
+    if (!isMember) {
+      return sendError(res, "You are not a member of this tontine", 403);
+    }
+
+    // Check if user is the owner (owners cannot leave)
+    if (tontine.owner_id === userId) {
+      return sendError(res, "Tontine owner cannot leave the tontine", 403);
+    }
+
+    // Get all cycles for this tontine
+    const cycles = await TontineCycle.findByTontine(id);
+    
+    // If no cycles exist, member cannot leave (no activity completed)
+    if (cycles.length === 0) {
+      return sendError(res, "Cannot leave tontine without any completed cycles", 400);
+    }
+
+    // Check if there are any active or pending cycles
+    const activeCycle = cycles.find(cycle => cycle.status === 'active' || cycle.status === 'pending');
+    if (activeCycle) {
+      return sendError(res, "Cannot leave tontine while there are active or pending cycles", 400);
+    }
+
+    // All cycles must be completed
+    const allCompleted = cycles.every(cycle => cycle.status === 'completed');
+    if (!allCompleted) {
+      return sendError(res, "Cannot leave tontine until all cycles are completed", 400);
+    }
+
+    // Verify all rounds in all cycles are completed
+    for (const cycle of cycles) {
+      const rounds = await TontineRound.findByCycle(cycle.id);
+      const incompleteRounds = rounds.filter(round => round.status !== 'closed');
+      if (incompleteRounds.length > 0) {
+        return sendError(res, "Cannot leave tontine until all rounds are completed", 400);
+      }
+    }
+
+    // Remove member from tontine
+    await TontineMember.delete(id, userId);
+
+    sendSuccess(
+      res,
+      {
+        tontine_id: parseInt(id),
+        user_id: userId,
+      },
+      "Successfully left the tontine"
+    );
+  } catch (error) {
+    console.error("Leave tontine error:", error);
+    sendError(res, "Failed to leave tontine", 500);
+  }
+};
+
 module.exports = {
   createTontine,
   getAllTontines,
@@ -310,4 +383,5 @@ module.exports = {
   updateTontine,
   deleteTontine,
   getTontineMembers,
+  leaveTontine,
 };

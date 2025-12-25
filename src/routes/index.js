@@ -9,14 +9,18 @@ const roundRoutes = require("./round.routes");
 const paymentRoutes = require("./payment.routes");
 const { API_VERSION } = require("../config/constants");
 
-// API routes
+// Public routes (no auth required) - MUST BE FIRST
+router.use(API_VERSION, apiRoutes);
+
+// Auth routes (no auth required for register/login)
 router.use(`${API_VERSION}/auth`, authRoutes);
+
+// Protected routes (auth required)
 router.use(`${API_VERSION}/users`, userRoutes);
 router.use(`${API_VERSION}/tontines`, tontineRoutes);
 router.use(API_VERSION, cycleRoutes);
 router.use(API_VERSION, roundRoutes);
 router.use(API_VERSION, paymentRoutes);
-router.use(API_VERSION, apiRoutes);
 
 // Route de base
 router.get("/", (req, res) => {

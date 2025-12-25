@@ -1,32 +1,170 @@
-# api-nabi
+# Api-nabi
 
 API REST pour la gestion de tontines avec Node.js et Express.
 
+## Table des matières
+
+- [Prérequis](#prérequis)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Démarrage](#démarrage)
+- [Tests](#tests)
+- [Documentation API](#documentation-api)
+- [Fonctionnalités](#fonctionnalités)
+- [Workflow Complet](#workflow-complet--cycle--tour--paiement)
+- [Sécurité](#sécurité)
+- [Structure du Projet](#structure-du-projet)
+- [Technologies](#technologies)
+- [Contribution](#contribution)
+
+## Prérequis
+
+Avant de commencer, assurez-vous d'avoir installé :
+
+- **Node.js** >= 14.x
+- **npm** >= 6.x
+- **Git**
+
 ## Installation
+
+### 1. Cloner le repository
+
+```bash
+git clone https://github.com/miraboy/api-nabi.git
+cd api-nabi
+```
+
+### 2. Installer les dépendances
 
 ```bash
 npm install
 ```
 
+### 3. Initialiser la base de données
+
+La base de données SQLite sera créée automatiquement au premier démarrage.
+Les migrations sont exécutées automatiquement.
+
+## Configuration
+
+### Variables d'environnement
+
+Créez un fichier `.env` à la racine du projet :
+
+```bash
+cp .env.example .env
+```
+
+Contenu du fichier `.env` :
+
+```env
+# Server
+PORT=3000
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=24h
+
+# Database
+DB_PATH=./database.sqlite
+```
+
+⚠️ **Important** : Changez `JWT_SECRET` en production !
+
 ## Démarrage
+
+### Mode développement
 
 ```bash
 npm start
 ```
 
-Le serveur démarre sur le port 3000.
+Le serveur démarre sur `http://localhost:3000`
+
+### Vérifier que le serveur fonctionne
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+Réponse attendue :
+```json
+{
+  "status": "OK",
+  "timestamp": "2025-12-25T00:00:00.000Z"
+}
+```
 
 ## Tests
+
+### Exécuter tous les tests
 
 ```bash
 npm test
 ```
 
-24 tests unitaires avec Jest et Supertest (100% de réussite).
+### Résultat attendu
+
+```
+Test Suites: 5 passed, 5 total
+Tests:       24 passed, 24 total
+Snapshots:   0 total
+Time:        5.963 s
+```
+
+### Tests de scénarios complets
+
+```bash
+node test-cycles.js
+```
+
+Ce script teste un workflow complet de A à Z.
 
 ## Documentation API
 
-Accédez à la documentation Swagger sur : `http://localhost:3000/api-docs`
+### Swagger UI
+
+Accédez à la documentation interactive Swagger :
+
+```
+http://localhost:3000/api-docs
+```
+
+### Collection Postman
+
+Importez la collection Postman pour tester l'API :
+
+1. Ouvrez Postman
+2. Cliquez sur **Import**
+3. Sélectionnez le fichier `postman_collection.json`
+4. La collection contient :
+   - Variables automatiques (tokens, IDs)
+   - Tous les endpoints organisés par catégorie
+   - Scripts de test pour capturer les tokens et IDs
+
+**Workflow recommandé** :
+1. Exécutez les requêtes dans **Authentication** pour créer les utilisateurs
+2. Créez une tontine dans **Tontines**
+3. Faites rejoindre les membresScripts de test pour capturer les tokens et IDs
+4. Créez et démarrez un cycle dans **Cycles**
+5. Effectuez les paiements dans **Payments**
+6. Fermez le tour dans **Rounds**
+
+### Endpoints principaux
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/auth/register` | Inscription |
+| POST | `/api/auth/login` | Connexion |
+| POST | `/api/tontines` | Créer une tontine |
+| POST | `/api/tontines/:id/join` | Rejoindre une tontine |
+| POST | `/api/tontines/:id/leave` | Quitter une tontine (après cycles terminés) |
+| POST | `/api/tontines/:id/cycles` | Créer un cycle |
+| POST | `/api/cycles/:id/start` | Démarrer un cycle |
+| GET | `/api/cycles/:id/stats` | Statistiques du cycle |
+| POST | `/api/rounds/:id/payments` | Créer un paiement |
+| POST | `/api/rounds/:id/close` | Fermer un tour |
+| GET | `/api/users/me/payments` | Mes paiements |
 
 ## Fonctionnalités
 
@@ -34,11 +172,11 @@ Accédez à la documentation Swagger sur : `http://localhost:3000/api-docs`
 - ✅ Inscription et connexion des utilisateurs
 - ✅ Authentification par JWT
 
-### Gestion des Tontines
-- ✅ Créer une tontine avec montant, fréquence et politique de ramassage
-- ✅ Rejoindre une tontine
-- ✅ Fermeture automatique quand le minimum de membres est atteint
-- ✅ Politiques de ramassage : `arrival`, `random`, `custom`
+### Gestion des Membres
+- ✅ Rejoindre une tontine ouverte
+- ✅ Quitter une tontine (uniquement après tous les cycles terminés)
+- ✅ Restrictions : propriétaire ne peut pas quitter, pas de retrait pendant cycles actifs
+- ✅ Vérification de l'état des cycles et tours avant autorisation de retrait
 
 ### Gestion des Cycles
 - ✅ Créer un cycle pour une tontine fermée
@@ -168,7 +306,37 @@ Authorization: Bearer {owner_token}
 # Quand le dernier tour est fermé, le cycle passe en "completed"
 ```
 
-### 4. Endpoints utiles
+### 4. Quitter une tontine (membres uniquement)
+
+```bash
+# 4.1 Tentative de quitter avant la fin des cycles (échoue)
+POST /api/tontines/1/leave
+Authorization: Bearer {member_token}
+# Réponse: { "status": "error", "message": "Cannot leave tontine without any completed cycles" }
+
+# 4.2 Quitter après que tous les cycles soient terminés (succès)
+POST /api/tontines/1/leave
+Authorization: Bearer {member_token}
+# Réponse: { 
+#   "status": "success", 
+#   "message": "Successfully left the tontine",
+#   "data": { "tontine_id": 1, "user_id": 2 }
+# }
+
+# 4.3 Vérifier que le membre n'est plus dans la tontine
+GET /api/tontines/my
+Authorization: Bearer {member_token}
+# La tontine ne devrait plus apparaître dans la liste "member"
+```
+
+#### Conditions pour quitter une tontine :
+- ✅ Être membre de la tontine (pas le propriétaire)
+- ✅ Tous les cycles doivent être terminés (status = 'completed')
+- ✅ Tous les tours de tous les cycles doivent être fermés (status = 'closed')
+- ❌ Impossible de quitter pendant un cycle actif ou en attente
+- ❌ Le propriétaire ne peut jamais quitter sa propre tontine
+
+### 5. Endpoints utiles
 
 ```bash
 # Lister tous les cycles d'une tontine
@@ -225,3 +393,61 @@ api-nabi/
 - **Express-validator** - Validation des entrées
 - **Swagger** - Documentation API
 - **Jest** + **Supertest** - Tests unitaires
+
+## Contribution
+
+### Développement
+
+1. Forkez le projet
+2. Créez une branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add AmazingFeature'`)
+4. Pushez vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+### Standards de code
+
+- Suivre les conventions JavaScript ES6+
+- Ajouter des tests pour toutes les nouvelles fonctionnalités
+- Documenter les endpoints avec Swagger
+- Maintenir la couverture de tests à 100%
+
+## Licence
+
+MIT License
+
+Copyright (c) 2025 Sèkplon Mirabel DOTOU
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+## Auteur
+
+**Miraboy**
+- GitHub: [@miraboy](https://github.com/miraboy)
+- Repository: [api-nabi](https://github.com/miraboy/api-nabi)
+
+## Support
+
+Pour toute question ou problème :
+- Ouvrez une [issue](https://github.com/miraboy/api-nabi/issues)
+- Consultez la [documentation Swagger](http://localhost:3000/api-docs)
+
+---
+
+⭐ Si ce projet vous aide, n'hésitez pas à lui donner une étoile !

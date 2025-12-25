@@ -5,6 +5,7 @@ const { getRoundById, closeRound } = require("../controllers/round.controller");
 const { roundIdValidation } = require("../validators/round.validators");
 const { handleValidationErrors } = require("../middlewares/validator.middleware");
 
+// All round routes require authentication
 router.use(authenticateToken);
 
 /**

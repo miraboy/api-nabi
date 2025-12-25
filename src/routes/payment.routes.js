@@ -12,6 +12,7 @@ const {
 } = require("../validators/payment.validators");
 const { handleValidationErrors } = require("../middlewares/validator.middleware");
 
+// All payment routes require authentication
 router.use(authenticateToken);
 
 /**

@@ -1,7 +1,7 @@
 {
   "name": "api-nabi",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST pour la gestion de tontines avec Node.js, Express et SQLite. Gestion complète des cycles, tours et paiements.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -11,9 +11,29 @@
     "type": "git",
     "url": "git+https://github.com/miraboy/api-nabi.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "tontine",
+    "api",
+    "rest",
+    "nodejs",
+    "express",
+    "sqlite",
+    "jwt",
+    "authentication",
+    "payment",
+    "cycle",
+    "round",
+    "finance",
+    "savings",
+    "group-savings",
+    "rotating-savings",
+    "rosca",
+    "swagger",
+    "jest",
+    "backend"
+  ],
+  "author": "Sèkplon Mirabel DOTOU",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/miraboy/api-nabi/issues"
   },
