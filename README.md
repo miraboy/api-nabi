@@ -112,14 +112,47 @@ Réponse attendue :
 npm test
 ```
 
+### Tests unitaires uniquement
+
+```bash
+npm run test:unit
+```
+
+### Tests d'intégration uniquement
+
+```bash
+npm run test:integration
+```
+
+### Mode watch pour le développement
+
+```bash
+npm run test:watch
+```
+
 ### Résultat attendu
 
 ```
-Test Suites: 5 passed, 5 total
-Tests:       24 passed, 24 total
+Test Suites: 13 passed, 13 total
+Tests:       82 passed, 82 total
 Snapshots:   0 total
-Time:        5.963 s
+Time:        17.671 s
 ```
+
+### Types de tests
+
+#### Tests unitaires (`tests/unit/`)
+- Tests des contrôleurs individuels
+- Tests des modèles de données
+- Tests des middlewares
+- Tests de pagination
+- Tests de sécurité
+
+#### Tests d'intégration (`tests/integration/`)
+- **Workflow complet** : Test du cycle de vie complet d'une tontine
+- **Authentification & Sécurité** : Tests des flux d'auth et contrôles d'accès
+- **Pagination & Performance** : Tests de pagination et performance
+- **Gestion d'erreurs** : Tests des cas d'erreur et cas limites
 
 ### Tests de scénarios complets
 
