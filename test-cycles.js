@@ -496,6 +496,28 @@ async function runTests() {
     }
     log("");
 
+    // 23. Test: Récupérer les statistiques du cycle
+    log("2️⃣3️⃣  Test: Récupérer les statistiques du cycle...", "yellow");
+    const statsRes = await request(
+      "GET",
+      `/cycles/${cycleRes.data.data.cycle.id}/stats`,
+      null,
+      owner.token
+    );
+
+    if (statsRes.status === 200) {
+      const stats = statsRes.data.data;
+      log(`   ✓ Statistiques récupérées avec succès`, "green");
+      log(`   ✓ Tour actuel: ${stats.current_round}/${stats.total_rounds}`, "green");
+      log(`   ✓ Tours restants: ${stats.remaining_rounds}`, "green");
+      log(`   ✓ Membres ayant payé: ${stats.members_paid.length}`, "green");
+      log(`   ✓ Membres n'ayant pas payé: ${stats.members_not_paid.length}`, "green");
+      log(`   ✓ Membres ayant ramassé: ${stats.members_collected.length}`, "green");
+    } else {
+      log(`   ✗ Erreur: ${statsRes.data.message}`, "red");
+    }
+    log("");
+
     log("✅ Tests terminés avec succès!\n", "green");
   } catch (error) {
     log(`\n❌ Erreur lors des tests: ${error.message}\n`, "red");
