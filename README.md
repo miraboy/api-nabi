@@ -88,6 +88,20 @@ AUTH_RATE_LIMIT_MAX=5
 npm start
 ```
 
+### Avec Docker
+
+```bash
+# Production
+docker-compose up --build -d
+
+# Développement avec hot reload
+docker-compose -f docker-compose.dev.yml up --build
+
+# Ou avec Makefile
+make prod  # Production
+make dev   # Développement
+```
+
 Le serveur démarre sur `http://localhost:3000`
 
 ### Vérifier que le serveur fonctionne
