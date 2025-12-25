@@ -1,25 +1,58 @@
 {
   "name": "api-nabi",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST pour la gestion de tontines avec Node.js, Express et SQLite. Gestion complète des cycles, tours et paiements.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/miraboy/api-nabi.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "tontine",
+    "api",
+    "rest",
+    "nodejs",
+    "express",
+    "sqlite",
+    "jwt",
+    "authentication",
+    "payment",
+    "cycle",
+    "round",
+    "finance",
+    "savings",
+    "group-savings",
+    "rotating-savings",
+    "rosca",
+    "swagger",
+    "jest",
+    "backend"
+  ],
+  "author": "Sèkplon Mirabel DOTOU",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/miraboy/api-nabi/issues"
   },
   "homepage": "https://github.com/miraboy/api-nabi#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }
