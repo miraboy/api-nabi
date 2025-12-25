@@ -60,6 +60,7 @@ Contenu du fichier `.env` :
 ```env
 # Server
 PORT=3000
+NODE_ENV=development
 
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
@@ -67,6 +68,14 @@ JWT_EXPIRES_IN=24h
 
 # Database
 DB_PATH=./database.sqlite
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+AUTH_RATE_LIMIT_MAX=5
 ```
 
 ⚠️ **Important** : Changez `JWT_SECRET` en production !
@@ -164,7 +173,9 @@ Importez la collection Postman pour tester l'API :
 | GET | `/api/cycles/:id/stats` | Statistiques du cycle |
 | POST | `/api/rounds/:id/payments` | Créer un paiement |
 | POST | `/api/rounds/:id/close` | Fermer un tour |
-| GET | `/api/users/me/payments` | Mes paiements |
+| GET | `/api/tontines` | Lister toutes les tontines (paginé) |
+| GET | `/api/users/me/payments` | Mes paiements (paginé) |
+| GET | `/api/rounds/:id/payments` | Paiements d'un tour (paginé) |
 
 ## Fonctionnalités
 
@@ -348,11 +359,56 @@ GET /api/cycles/1
 # Détails d'un tour
 GET /api/rounds/1
 
-# Mes paiements
-GET /api/users/me/payments
+# Mes paiements (paginé)
+GET /api/users/me/payments?page=1&limit=10
 
 # Détails d'une tontine
 GET /api/tontines/1
+```
+
+## Pagination
+
+Certaines routes supportent la pagination pour gérer efficacement de grandes quantités de données :
+
+### Routes paginées
+- `GET /api/tontines` - Liste des tontines
+- `GET /api/users/me/payments` - Paiements de l'utilisateur
+- `GET /api/rounds/:id/payments` - Paiements d'un tour
+
+### Paramètres de pagination
+- `page` : Numéro de page (défaut: 1, minimum: 1)
+- `limit` : Nombre d'éléments par page (défaut: 10, maximum: 100)
+
+### Exemple d'utilisation
+```bash
+# Première page avec 10 éléments (défaut)
+GET /api/tontines
+
+# Deuxième page avec 5 éléments
+GET /api/tontines?page=2&limit=5
+
+# Mes paiements, page 3 avec 20 éléments
+GET /api/users/me/payments?page=3&limit=20
+```
+
+### Structure de réponse paginée
+```json
+{
+  "status": "success",
+  "data": {
+    "data": [...], // Les données de la page actuelle
+    "pagination": {
+      "current_page": 1,
+      "per_page": 10,
+      "total_items": 50,
+      "total_pages": 5,
+      "has_next": true,
+      "has_prev": false,
+      "next_page": 2,
+      "prev_page": null
+    }
+  }
+}
 ```
 
 ## Sécurité
@@ -363,6 +419,9 @@ GET /api/tontines/1
 - ✅ Validation de toutes les entrées
 - ✅ Verrouillage après démarrage du cycle
 - ✅ Vérification des montants et doublons
+- ✅ **Rate limiting** - Protection contre les attaques par déni de service
+- ✅ **CORS configuré** - Contrôle des origines autorisées
+- ✅ **Logging des requêtes** - Traçabilité complète des accès API
 
 ## Structure du Projet
 

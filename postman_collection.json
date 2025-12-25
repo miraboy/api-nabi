@@ -213,6 +213,24 @@
           }
         },
         {
+          "name": "Get All Tontines - Paginated",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tontines?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["tontines"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "5"}
+              ]
+            }
+          }
+        },
+        {
           "name": "Get Tontine By ID",
           "request": {
             "method": "GET",
@@ -534,6 +552,24 @@
               "raw": "{{baseUrl}}/users/me/payments",
               "host": ["{{baseUrl}}"],
               "path": ["users", "me", "payments"]
+            }
+          }
+        },
+        {
+          "name": "Get My Payments - Paginated",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{ownerToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/payments?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "payments"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "5"}
+              ]
             }
           }
         }

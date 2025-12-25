@@ -307,6 +307,45 @@ const options = {
             },
           },
         },
+        PaginationInfo: {
+          type: "object",
+          properties: {
+            current_page: {
+              type: "integer",
+              example: 1,
+            },
+            per_page: {
+              type: "integer",
+              example: 10,
+            },
+            total_items: {
+              type: "integer",
+              example: 50,
+            },
+            total_pages: {
+              type: "integer",
+              example: 5,
+            },
+            has_next: {
+              type: "boolean",
+              example: true,
+            },
+            has_prev: {
+              type: "boolean",
+              example: false,
+            },
+            next_page: {
+              type: "integer",
+              nullable: true,
+              example: 2,
+            },
+            prev_page: {
+              type: "integer",
+              nullable: true,
+              example: null,
+            },
+          },
+        },
       },
     },
     tags: [

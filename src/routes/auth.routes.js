@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { register, login, logout } = require("../controllers/auth.controller");
+const { authLimiter } = require("../middlewares/rateLimit.middleware");
 const {
   registerValidation,
   loginValidation,
@@ -8,6 +9,9 @@ const {
 const {
   handleValidationErrors,
 } = require("../middlewares/validator.middleware");
+
+// Rate limiting pour les routes d'authentification
+router.use(authLimiter);
 
 // Auth routes are public (no authentication required)
 

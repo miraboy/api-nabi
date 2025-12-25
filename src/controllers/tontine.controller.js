@@ -4,6 +4,7 @@ const Payment = require("../models/Payment.model");
 const TontineCycle = require("../models/TontineCycle.model");
 const TontineRound = require("../models/TontineRound.model");
 const { sendSuccess, sendError } = require("../utils/helpers");
+const { getPaginationParams, createPaginatedResponse } = require("../utils/pagination");
 
 /**
  * Create a new tontine
@@ -48,16 +49,21 @@ const createTontine = async (req, res) => {
 };
 
 /**
- * Get all tontines
+ * Get all tontines with pagination
  */
 const getAllTontines = async (req, res) => {
   try {
     const { status } = req.query;
     const filters = status ? { status } : {};
+    const { page, limit, offset } = getPaginationParams(req.query);
 
-    const tontines = await Tontine.findAll(filters);
+    const [tontines, total] = await Promise.all([
+      Tontine.findAll(filters, { limit, offset }),
+      Tontine.count(filters)
+    ]);
 
-    sendSuccess(res, tontines);
+    const response = createPaginatedResponse(tontines, total, page, limit);
+    sendSuccess(res, response);
   } catch (error) {
     console.error("Get tontines error:", error);
     sendError(res, "Failed to get tontines", 500);

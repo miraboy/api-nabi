@@ -4,6 +4,7 @@ const TontineCycle = require("../models/TontineCycle.model");
 const Tontine = require("../models/Tontine.model");
 const TontineMember = require("../models/TontineMember.model");
 const { sendSuccess, sendError } = require("../utils/helpers");
+const { getPaginationParams, createPaginatedResponse } = require("../utils/pagination");
 
 /**
  * Create a payment for a round
@@ -49,19 +50,25 @@ const createPayment = async (req, res) => {
 };
 
 /**
- * Get payments for a round
+ * Get payments for a round with pagination
  */
 const getPaymentsByRound = async (req, res) => {
   try {
     const { roundId } = req.params;
+    const { page, limit, offset } = getPaginationParams(req.query);
 
     const round = await TontineRound.findById(roundId);
     if (!round) {
       return sendError(res, "Round not found", 404);
     }
 
-    const payments = await Payment.findByRound(roundId);
-    sendSuccess(res, { payments, total: payments.length });
+    const [payments, total] = await Promise.all([
+      Payment.findByRound(roundId, { limit, offset }),
+      Payment.countByRound(roundId)
+    ]);
+
+    const response = createPaginatedResponse(payments, total, page, limit);
+    sendSuccess(res, response);
   } catch (error) {
     console.error("Get payments error:", error);
     sendError(res, "Failed to get payments", 500);
@@ -69,13 +76,20 @@ const getPaymentsByRound = async (req, res) => {
 };
 
 /**
- * Get user's payments
+ * Get user's payments with pagination
  */
 const getUserPayments = async (req, res) => {
   try {
     const userId = req.user.id;
-    const payments = await Payment.findByUser(userId);
-    sendSuccess(res, { payments, total: payments.length });
+    const { page, limit, offset } = getPaginationParams(req.query);
+
+    const [payments, total] = await Promise.all([
+      Payment.findByUser(userId, { limit, offset }),
+      Payment.countByUser(userId)
+    ]);
+
+    const response = createPaginatedResponse(payments, total, page, limit);
+    sendSuccess(res, response);
   } catch (error) {
     console.error("Get user payments error:", error);
     sendError(res, "Failed to get payments", 500);

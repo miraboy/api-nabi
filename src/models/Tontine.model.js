@@ -48,9 +48,9 @@ class Tontine {
   }
 
   /**
-   * Get all tontines
+   * Get all tontines with pagination
    */
-  static findAll(filters = {}) {
+  static findAll(filters = {}, pagination = null) {
     return new Promise((resolve, reject) => {
       let sql = "SELECT * FROM tontines";
       const params = [];
@@ -60,9 +60,36 @@ class Tontine {
         params.push(filters.status);
       }
 
+      sql += " ORDER BY created_at DESC";
+
+      if (pagination) {
+        sql += " LIMIT ? OFFSET ?";
+        params.push(pagination.limit, pagination.offset);
+      }
+
       db.all(sql, params, (err, rows) => {
         if (err) return reject(err);
         resolve(rows);
+      });
+    });
+  }
+
+  /**
+   * Count all tontines
+   */
+  static count(filters = {}) {
+    return new Promise((resolve, reject) => {
+      let sql = "SELECT COUNT(*) as total FROM tontines";
+      const params = [];
+
+      if (filters.status) {
+        sql += " WHERE status = ?";
+        params.push(filters.status);
+      }
+
+      db.get(sql, params, (err, row) => {
+        if (err) return reject(err);
+        resolve(row.total);
       });
     });
   }

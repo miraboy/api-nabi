@@ -96,7 +96,7 @@ router.post(
  * @swagger
  * /api/tontines:
  *   get:
- *     summary: Get all tontines
+ *     summary: Get all tontines with pagination
  *     tags: [Tontines]
  *     security:
  *       - bearerAuth: []
@@ -107,13 +107,41 @@ router.post(
  *           type: string
  *           enum: [open, closed]
  *         description: Filter by status
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
- *         description: List of tontines
+ *         description: Paginated list of tontines
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Tontine'
+ *                     pagination:
+ *                       $ref: '#/components/schemas/PaginationInfo'
  *       401:
  *         description: Unauthorized
  *         content:

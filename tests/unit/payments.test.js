@@ -93,8 +93,9 @@ describe('Payments', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data).toHaveProperty('payments');
-      expect(Array.isArray(res.body.data.payments)).toBe(true);
+      expect(res.body.data).toHaveProperty('data');
+      expect(res.body.data).toHaveProperty('pagination');
+      expect(Array.isArray(res.body.data.data)).toBe(true);
     });
   });
 
@@ -105,8 +106,9 @@ describe('Payments', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data).toHaveProperty('payments');
-      expect(res.body.data.payments.length).toBeGreaterThan(0);
+      expect(res.body.data).toHaveProperty('data');
+      expect(res.body.data).toHaveProperty('pagination');
+      expect(res.body.data.data.length).toBeGreaterThan(0);
     });
   });
 });
