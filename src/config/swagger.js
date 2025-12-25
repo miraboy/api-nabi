@@ -164,6 +164,14 @@ const options = {
               enum: ["daily", "weekly", "monthly", "yearly"],
               example: "monthly",
             },
+            pickup_policy: {
+              type: "string",
+              enum: ["arrival", "random", "custom"],
+              default: "arrival",
+              example: "arrival",
+              description:
+                "Order policy for collecting the pot: arrival (first joined), random, or custom",
+            },
           },
         },
         PaymentRequest: {
@@ -196,6 +204,38 @@ const options = {
               type: "string",
               enum: ["daily", "weekly", "monthly", "yearly"],
               example: "weekly",
+            },
+            pickup_policy: {
+              type: "string",
+              enum: ["arrival", "random", "custom"],
+              example: "random",
+              description: "Order policy for collecting the pot",
+            },
+          },
+        },
+        CreateCycleRequest: {
+          type: "object",
+          properties: {
+            start_date: {
+              type: "string",
+              format: "date",
+              example: "2025-01-01",
+              description: "Cycle start date (optional)",
+            },
+            end_date: {
+              type: "string",
+              format: "date",
+              example: "2025-12-31",
+              description: "Cycle end date (optional)",
+            },
+            custom_order: {
+              type: "array",
+              items: {
+                type: "integer",
+              },
+              example: [1, 3, 7, 2, 5],
+              description:
+                "Custom order of user IDs (required if pickup_policy is 'custom')",
             },
           },
         },
@@ -285,6 +325,10 @@ const options = {
       {
         name: "Tontines",
         description: "Tontine management endpoints (protected)",
+      },
+      {
+        name: "Cycles",
+        description: "Tontine cycles and rounds management (protected)",
       },
     ],
   },

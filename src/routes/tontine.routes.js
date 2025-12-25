@@ -11,6 +11,7 @@ const {
   getUserTontines,
   updateTontine,
   deleteTontine,
+  getTontineMembers,
 } = require("../controllers/tontine.controller");
 const {
   createTontineValidation,
@@ -359,6 +360,81 @@ router.delete(
   handleValidationErrors,
   isAuthor,
   deleteTontine
+);
+
+/**
+ * @swagger
+ * /api/tontines/{id}/members:
+ *   get:
+ *     summary: Get members of a tontine (owner only)
+ *     tags: [Tontines]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tontine ID
+ *     responses:
+ *       200:
+ *         description: List of tontine members
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Members retrieved successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     tontine_id:
+ *                       type: integer
+ *                     members_count:
+ *                       type: integer
+ *                     members:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           tontine_id:
+ *                             type: integer
+ *                           user_id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           joined_at:
+ *                             type: string
+ *                             format: date-time
+ *       403:
+ *         description: Not the owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Tontine not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get(
+  "/:id/members",
+  tontineIdValidation,
+  handleValidationErrors,
+  isAuthor,
+  getTontineMembers
 );
 
 module.exports = router;

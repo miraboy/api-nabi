@@ -4,13 +4,20 @@ class Tontine {
   /**
    * Create a new tontine
    */
-  static create(name, amount, minMembers, frequency, ownerId) {
+  static create(
+    name,
+    amount,
+    minMembers,
+    frequency,
+    ownerId,
+    pickupPolicy = "arrival"
+  ) {
     return new Promise((resolve, reject) => {
       const sql =
-        "INSERT INTO tontines (name, amount, min_members, frequency, owner_id) VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO tontines (name, amount, min_members, frequency, pickup_policy, owner_id) VALUES (?, ?, ?, ?, ?, ?)";
       db.run(
         sql,
-        [name, amount, minMembers, frequency, ownerId],
+        [name, amount, minMembers, frequency, pickupPolicy, ownerId],
         function (err) {
           if (err) return reject(err);
           resolve({
@@ -19,6 +26,7 @@ class Tontine {
             amount,
             min_members: minMembers,
             frequency,
+            pickup_policy: pickupPolicy,
             owner_id: ownerId,
           });
         }
@@ -78,10 +86,17 @@ class Tontine {
   static update(id, data) {
     return new Promise((resolve, reject) => {
       const sql =
-        "UPDATE tontines SET name = ?, amount = ?, min_members = ?, frequency = ? WHERE id = ?";
+        "UPDATE tontines SET name = ?, amount = ?, min_members = ?, frequency = ?, pickup_policy = ? WHERE id = ?";
       db.run(
         sql,
-        [data.name, data.amount, data.min_members, data.frequency, id],
+        [
+          data.name,
+          data.amount,
+          data.min_members,
+          data.frequency,
+          data.pickup_policy,
+          id,
+        ],
         function (err) {
           if (err) return reject(err);
           resolve({ changes: this.changes });

@@ -3,16 +3,20 @@ const db = require("../utils/db");
 class Payment {
   /**
    * Create a new payment
+   * @param {number} roundId - ID of the round (cycle's turn)
+   * @param {number} userId - ID of the user making payment
+   * @param {number} amount - Payment amount
+   * @param {string} status - Payment status (pending, completed, failed)
    */
-  static create(tontineId, userId, amount, status = "completed") {
+  static create(roundId, userId, amount, status = "pending") {
     return new Promise((resolve, reject) => {
       const sql =
-        "INSERT INTO payments (tontine_id, user_id, amount, status) VALUES (?, ?, ?, ?)";
-      db.run(sql, [tontineId, userId, amount, status], function (err) {
+        "INSERT INTO payments (round_id, user_id, amount, status) VALUES (?, ?, ?, ?)";
+      db.run(sql, [roundId, userId, amount, status], function (err) {
         if (err) return reject(err);
         resolve({
           id: this.lastID,
-          tontine_id: tontineId,
+          round_id: roundId,
           user_id: userId,
           amount,
           status,
@@ -35,15 +39,19 @@ class Payment {
   }
 
   /**
-   * Get all payments for a tontine
+   * Get all payments for a tontine (through rounds and cycles)
+   * @param {number} tontineId - ID of the tontine
    */
   static findByTontine(tontineId) {
     return new Promise((resolve, reject) => {
       const sql = `
-        SELECT p.*, u.name as user_name, u.email as user_email
+        SELECT p.*, u.name as user_name, u.email as user_email,
+               r.round_number, c.id as cycle_id
         FROM payments p
         JOIN users u ON p.user_id = u.id
-        WHERE p.tontine_id = ?
+        JOIN tontine_rounds r ON p.round_id = r.id
+        JOIN tontine_cycles c ON r.cycle_id = c.id
+        WHERE c.tontine_id = ?
         ORDER BY p.paid_at DESC
       `;
       db.all(sql, [tontineId], (err, rows) => {
@@ -59,9 +67,11 @@ class Payment {
   static findByUser(userId) {
     return new Promise((resolve, reject) => {
       const sql = `
-        SELECT p.*, t.name as tontine_name
+        SELECT p.*, t.name as tontine_name, r.round_number
         FROM payments p
-        JOIN tontines t ON p.tontine_id = t.id
+        JOIN tontine_rounds r ON p.round_id = r.id
+        JOIN tontine_cycles c ON r.cycle_id = c.id
+        JOIN tontines t ON c.tontine_id = t.id
         WHERE p.user_id = ?
         ORDER BY p.paid_at DESC
       `;
@@ -73,12 +83,17 @@ class Payment {
   }
 
   /**
-   * Get total amount paid by user in tontine
+   * Get total amount paid by user in tontine (across all cycles and rounds)
    */
   static getTotalByUserInTontine(tontineId, userId) {
     return new Promise((resolve, reject) => {
-      const sql =
-        "SELECT SUM(amount) as total FROM payments WHERE tontine_id = ? AND user_id = ?";
+      const sql = `
+        SELECT SUM(p.amount) as total 
+        FROM payments p
+        JOIN tontine_rounds r ON p.round_id = r.id
+        JOIN tontine_cycles c ON r.cycle_id = c.id
+        WHERE c.tontine_id = ? AND p.user_id = ?
+      `;
       db.get(sql, [tontineId, userId], (err, row) => {
         if (err) return reject(err);
         resolve(row.total || 0);

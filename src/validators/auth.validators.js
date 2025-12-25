@@ -66,6 +66,11 @@ const createTontineValidation = [
     .withMessage("Frequency is required")
     .isIn(["daily", "weekly", "monthly", "yearly"])
     .withMessage("Frequency must be one of: daily, weekly, monthly, yearly"),
+  body("pickup_policy")
+    .optional()
+    .trim()
+    .isIn(["arrival", "random", "custom"])
+    .withMessage("Pickup policy must be one of: arrival, random, custom"),
 ];
 
 /**
@@ -118,6 +123,11 @@ const updateTontineValidation = [
     .trim()
     .isIn(["daily", "weekly", "monthly", "yearly"])
     .withMessage("Frequency must be one of: daily, weekly, monthly, yearly"),
+  body("pickup_policy")
+    .optional()
+    .trim()
+    .isIn(["arrival", "random", "custom"])
+    .withMessage("Pickup policy must be one of: arrival, random, custom"),
 ];
 
 module.exports = {

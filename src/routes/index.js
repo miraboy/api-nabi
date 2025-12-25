@@ -4,12 +4,14 @@ const apiRoutes = require("./api.routes");
 const authRoutes = require("./auth.routes");
 const userRoutes = require("./user.routes");
 const tontineRoutes = require("./tontine.routes");
+const cycleRoutes = require("./cycle.routes");
 const { API_VERSION } = require("../config/constants");
 
 // API routes
 router.use(`${API_VERSION}/auth`, authRoutes);
 router.use(`${API_VERSION}/users`, userRoutes);
 router.use(`${API_VERSION}/tontines`, tontineRoutes);
+router.use(API_VERSION, cycleRoutes);
 router.use(API_VERSION, apiRoutes);
 
 // Route de base
@@ -22,6 +24,7 @@ router.get("/", (req, res) => {
       auth: `${API_VERSION}/auth`,
       users: `${API_VERSION}/users`,
       tontines: `${API_VERSION}/tontines`,
+      cycles: `${API_VERSION}/cycles`,
       api: API_VERSION,
     },
   });

@@ -8,7 +8,7 @@ const { sendSuccess, sendError } = require("../utils/helpers");
  */
 const createTontine = async (req, res) => {
   try {
-    const { name, amount, min_members, frequency } = req.body;
+    const { name, amount, min_members, frequency, pickup_policy } = req.body;
     const ownerId = req.user.id;
 
     // Create tontine
@@ -17,7 +17,8 @@ const createTontine = async (req, res) => {
       amount,
       min_members,
       frequency,
-      ownerId
+      ownerId,
+      pickup_policy
     );
 
     // Auto-join creator as first member
@@ -31,6 +32,7 @@ const createTontine = async (req, res) => {
         amount: tontine.amount,
         min_members: tontine.min_members,
         frequency: tontine.frequency,
+        pickup_policy: tontine.pickup_policy,
         owner_id: tontine.owner_id,
         status: "open",
       },
@@ -237,7 +239,7 @@ const getUserTontines = async (req, res) => {
 const updateTontine = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, amount, min_members, frequency } = req.body;
+    const { name, amount, min_members, frequency, pickup_policy } = req.body;
     const tontine = req.tontine; // From isAuthor middleware
 
     const updatedData = {
@@ -245,6 +247,7 @@ const updateTontine = async (req, res) => {
       amount: amount || tontine.amount,
       min_members: min_members || tontine.min_members,
       frequency: frequency || tontine.frequency,
+      pickup_policy: pickup_policy || tontine.pickup_policy,
     };
 
     await Tontine.update(id, updatedData);
@@ -272,6 +275,31 @@ const deleteTontine = async (req, res) => {
   }
 };
 
+/**
+ * Get members of a tontine (owner only)
+ */
+const getTontineMembers = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get members with their details
+    const members = await TontineMember.findByTontine(id);
+
+    sendSuccess(
+      res,
+      {
+        tontine_id: parseInt(id),
+        members_count: members.length,
+        members,
+      },
+      "Members retrieved successfully"
+    );
+  } catch (error) {
+    console.error("Get tontine members error:", error);
+    sendError(res, "Failed to get tontine members", 500);
+  }
+};
+
 module.exports = {
   createTontine,
   getAllTontines,
@@ -281,4 +309,5 @@ module.exports = {
   getUserTontines,
   updateTontine,
   deleteTontine,
+  getTontineMembers,
 };
