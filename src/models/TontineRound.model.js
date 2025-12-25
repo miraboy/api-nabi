@@ -26,7 +26,12 @@ class TontineRound {
    */
   static findById(id) {
     return new Promise((resolve, reject) => {
-      const sql = "SELECT * FROM tontine_rounds WHERE id = ?";
+      const sql = `
+        SELECT r.*, u.name as collector_name
+        FROM tontine_rounds r
+        JOIN users u ON r.collector_user_id = u.id
+        WHERE r.id = ?
+      `;
       db.get(sql, [id], (err, row) => {
         if (err) return reject(err);
         resolve(row);
@@ -90,6 +95,32 @@ class TontineRound {
       db.run(sql, [id], function (err) {
         if (err) return reject(err);
         resolve({ changes: this.changes });
+      });
+    });
+  }
+
+  /**
+   * Find round by cycle and round number
+   */
+  static findByRoundNumber(cycleId, roundNumber) {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM tontine_rounds WHERE cycle_id = ? AND round_number = ?";
+      db.get(sql, [cycleId, roundNumber], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+  }
+
+  /**
+   * Find current round for a cycle
+   */
+  static findCurrentRound(cycleId) {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM tontine_rounds WHERE cycle_id = ? AND status = 'open'";
+      db.get(sql, [cycleId], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
       });
     });
   }

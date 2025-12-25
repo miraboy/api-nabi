@@ -92,6 +92,19 @@ class TontineMember {
       });
     });
   }
+
+  /**
+   * Find member by tontine and user
+   */
+  static findByTontineAndUser(tontineId, userId) {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM tontine_members WHERE tontine_id = ? AND user_id = ?";
+      db.get(sql, [tontineId, userId], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+  }
 }
 
 module.exports = TontineMember;

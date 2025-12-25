@@ -206,8 +206,161 @@ const getTontineCycles = async (req, res) => {
   }
 };
 
+/**
+ * Set custom payout order for a cycle
+ */
+const setPayoutOrder = async (req, res) => {
+  try {
+    const { cycleId } = req.params;
+    const { custom_order } = req.body;
+    const userId = req.user.id;
+
+    const cycle = await TontineCycle.findById(cycleId);
+    if (!cycle) {
+      return sendError(res, "Cycle not found", 404);
+    }
+
+    const tontine = await Tontine.findById(cycle.tontine_id);
+    if (tontine.owner_id !== userId) {
+      return sendError(res, "Only the owner can set payout order", 403);
+    }
+
+    if (cycle.status !== "pending") {
+      return sendError(res, "Can only modify order before cycle starts", 400);
+    }
+
+    const members = await TontineMember.findByTontine(cycle.tontine_id);
+    const memberIds = members.map((m) => m.user_id);
+    const customIds = custom_order.map((id) => parseInt(id));
+
+    if (customIds.length !== memberIds.length) {
+      return sendError(res, "Custom order must include all members", 400);
+    }
+
+    const missingIds = memberIds.filter((id) => !customIds.includes(id));
+    if (missingIds.length > 0) {
+      return sendError(
+        res,
+        `Missing member IDs: ${missingIds.join(", ")}`,
+        400
+      );
+    }
+
+    await TontinePayoutOrder.deleteForCycle(cycleId);
+    const payoutOrder = customIds.map((id, index) => ({
+      userId: id,
+      position: index + 1,
+    }));
+    await TontinePayoutOrder.bulkCreate(cycleId, payoutOrder);
+
+    const updatedOrder = await TontinePayoutOrder.findByCycle(cycleId);
+    sendSuccess(res, { payout_order: updatedOrder }, "Payout order updated");
+  } catch (error) {
+    console.error("Set payout order error:", error);
+    sendError(res, error.message || "Failed to set payout order", 500);
+  }
+};
+
+/**
+ * Start a cycle
+ */
+const startCycle = async (req, res) => {
+  try {
+    const { cycleId } = req.params;
+    const userId = req.user.id;
+
+    const cycle = await TontineCycle.findById(cycleId);
+    if (!cycle) {
+      return sendError(res, "Cycle not found", 404);
+    }
+
+    const tontine = await Tontine.findById(cycle.tontine_id);
+    if (tontine.owner_id !== userId) {
+      return sendError(res, "Only the owner can start a cycle", 403);
+    }
+
+    if (cycle.status !== "pending") {
+      return sendError(res, "Cycle is not pending", 400);
+    }
+
+    await TontineCycle.updateStatus(cycleId, "active");
+    await TontineCycle.updateCurrentRound(cycleId, 1);
+
+    const firstRound = await TontineRound.findByRoundNumber(cycleId, 1);
+    if (firstRound) {
+      await TontineRound.start(firstRound.id);
+    }
+
+    const updatedCycle = await TontineCycle.findById(cycleId);
+    sendSuccess(res, { cycle: updatedCycle }, "Cycle started successfully");
+  } catch (error) {
+    console.error("Start cycle error:", error);
+    sendError(res, error.message || "Failed to start cycle", 500);
+  }
+};
+
+/**
+ * Get cycle statistics for owner
+ */
+const getCycleStats = async (req, res) => {
+  try {
+    const { cycleId } = req.params;
+    const userId = req.user.id;
+
+    const cycle = await TontineCycle.findById(cycleId);
+    if (!cycle) {
+      return sendError(res, "Cycle not found", 404);
+    }
+
+    const tontine = await Tontine.findById(cycle.tontine_id);
+    if (tontine.owner_id !== userId) {
+      return sendError(res, "Only the owner can view cycle stats", 403);
+    }
+
+    const Payment = require("../models/Payment.model");
+    const members = await TontineMember.findByTontine(cycle.tontine_id);
+    const payoutOrder = await TontinePayoutOrder.findByCycle(cycleId);
+    const rounds = await TontineRound.findByCycle(cycleId);
+    const currentRound = rounds.find(r => r.status === "open");
+
+    let membersPaid = [];
+    let membersNotPaid = [];
+    let membersCollected = [];
+
+    if (currentRound) {
+      const payments = await Payment.findByRound(currentRound.id);
+      const paidUserIds = payments.map(p => p.user_id);
+
+      membersPaid = members.filter(m => paidUserIds.includes(m.user_id));
+      membersNotPaid = members.filter(m => !paidUserIds.includes(m.user_id));
+    } else {
+      membersNotPaid = members;
+    }
+
+    membersCollected = payoutOrder.filter(po => po.has_collected);
+
+    const remainingRounds = cycle.total_rounds - cycle.current_round;
+
+    sendSuccess(res, {
+      cycle_id: cycleId,
+      current_round: cycle.current_round,
+      total_rounds: cycle.total_rounds,
+      remaining_rounds: remainingRounds,
+      members_paid: membersPaid.map(m => ({ user_id: m.user_id, name: m.name, email: m.email })),
+      members_not_paid: membersNotPaid.map(m => ({ user_id: m.user_id, name: m.name, email: m.email })),
+      members_collected: membersCollected.map(mc => ({ user_id: mc.user_id, name: mc.name, position: mc.position })),
+    });
+  } catch (error) {
+    console.error("Get cycle stats error:", error);
+    sendError(res, error.message || "Failed to get cycle stats", 500);
+  }
+};
+
 module.exports = {
   createCycle,
   getCycleById,
   getTontineCycles,
+  setPayoutOrder,
+  startCycle,
+  getCycleStats,
 };

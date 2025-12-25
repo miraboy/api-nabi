@@ -126,6 +126,50 @@ class Payment {
       });
     });
   }
+
+  /**
+   * Find all payments for a round
+   */
+  static findByRound(roundId) {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        SELECT p.*, u.name as user_name
+        FROM payments p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.round_id = ?
+      `;
+      db.all(sql, [roundId], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows || []);
+      });
+    });
+  }
+
+  /**
+   * Find payment by user and round
+   */
+  static findByUserAndRound(userId, roundId) {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT * FROM payments WHERE user_id = ? AND round_id = ?";
+      db.get(sql, [userId, roundId], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+  }
+
+  /**
+   * Count payments for a round
+   */
+  static countByRound(roundId) {
+    return new Promise((resolve, reject) => {
+      const sql = "SELECT COUNT(*) as count FROM payments WHERE round_id = ?";
+      db.get(sql, [roundId], (err, row) => {
+        if (err) return reject(err);
+        resolve(row.count || 0);
+      });
+    });
+  }
 }
 
 module.exports = Payment;

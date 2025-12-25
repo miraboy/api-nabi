@@ -7,7 +7,7 @@ class TontineCycle {
   static create(tontineId, startDate, endDate, totalRounds) {
     return new Promise((resolve, reject) => {
       const sql =
-        "INSERT INTO tontine_cycles (tontine_id, start_date, end_date, total_rounds, status) VALUES (?, ?, ?, ?, 'active')";
+        "INSERT INTO tontine_cycles (tontine_id, start_date, end_date, total_rounds, status) VALUES (?, ?, ?, ?, 'pending')";
       db.run(sql, [tontineId, startDate, endDate, totalRounds], function (err) {
         if (err) return reject(err);
         resolve({
@@ -17,7 +17,7 @@ class TontineCycle {
           end_date: endDate,
           total_rounds: totalRounds,
           current_round: 0,
-          status: "active",
+          status: "pending",
         });
       });
     });

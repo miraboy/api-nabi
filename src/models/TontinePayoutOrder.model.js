@@ -73,6 +73,18 @@ class TontinePayoutOrder {
       });
     });
   }
+  /**
+   * Delete all payout orders for a cycle
+   */
+  static deleteForCycle(cycleId) {
+    return new Promise((resolve, reject) => {
+      const sql = "DELETE FROM tontine_payout_order WHERE cycle_id = ?";
+      db.run(sql, [cycleId], function (err) {
+        if (err) return reject(err);
+        resolve({ changes: this.changes });
+      });
+    });
+  }
 }
 
 module.exports = TontinePayoutOrder;
